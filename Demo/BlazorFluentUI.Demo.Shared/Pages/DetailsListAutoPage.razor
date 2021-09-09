@@ -82,6 +82,18 @@
         </div>
     </div>
 </div>
+
+<h1>Code Example for problem in sort</h1>
+<div data-is-scrollable="true" style="overflow-y:auto;margin-bottom:50px">
+        <DetailsListAuto ItemsSource="itemSource" Columns="table"
+            IsVirtualizing="true" Compact="true"
+            TItem="CustomGrid"
+            GetKey=@(x=>x.id)
+            LayoutMode="BlazorFluentUI.Lists.DetailsListLayoutMode.Justified"
+            Selection="tableSelection"
+            SelectionMode="SelectionMode.Multiple" />
+</div>
+
 @code {
 
     bool isVirtualizing = true;
@@ -93,6 +105,11 @@
     Selection<DataItem> selection2 = new Selection<DataItem>();
     Selection<DataItem> selection3 = new Selection<DataItem>();
 
+    System.Collections.Generic.List<CustomGrid> itemSource= new System.Collections.Generic.List<CustomGrid>();
+    System.Collections.Generic.List<IDropdownOption> statuses= new System.Collections.Generic.List<IDropdownOption>();
+    System.Collections.Generic.List<IDetailsRowColumn<CustomGrid>> table= new System.Collections.Generic.List<IDetailsRowColumn<CustomGrid>>(); 
+    Selection<CustomGrid> tableSelection = new Selection<CustomGrid>();
+    
     System.Collections.Generic.List<DataItem> dataSource = new ();
 
     int count = 0;
@@ -122,19 +139,44 @@
         fixedColumnsSource.Add(new DetailsRowColumn<DataItem, int>("Key", x => x.KeyNumber) { Index = 0 });
         fixedColumnsSource.Add(new DetailsRowColumn<DataItem, string>("Name", x => x.DisplayName!) { Index = 1 });
         fixedColumnsSource.Add(new DetailsRowColumn<DataItem, string>("Description", x => x.Description!) { Index = 2 });
+        
+        statuses.Add(new DropdownOption { ItemType = SelectableOptionMenuItemType.Normal, Key = "1", Text = "Active" });
+        statuses.Add(new DropdownOption { ItemType = SelectableOptionMenuItemType.Normal, Key = "2", Text = "Suspend" });
+
+        table.Add(new DetailsRowColumn<CustomGrid, string>("name", x => x.name) { Index = 1, MinWidth=300, MaxWidth=700, IsResizable = true });
+        table.Add(new DetailsRowColumn<CustomGrid, string>("lastname", x => x.lastname) { Index = 2, MinWidth=300, MaxWidth=760, IsResizable = true });
+        table.Add(new DetailsRowColumn<CustomGrid, string>("status", x => x.status) { Index = 3, MinWidth = 80, MaxWidth = 80, IsResizable = true });
+        table.Add(new DetailsRowColumn<CustomGrid, IDropdownOption>("second status", x => x) {
+            Index=4,
+            MinWidth = 130, 
+            MaxWidth = 130, 
+            IsResizable = false,
+            ColumnItemTemplate = response => @<DropDownGridColumn row="response" statuses="statuses"></DropDownGridColumn>
+        });
+        table.Add(new DetailsRowColumn<CustomGrid, int>("amount", x => x) {
+            Index = 5,
+            MinWidth = 100, 
+            MaxWidth = 100, 
+            IsResizable = false,
+            ColumnItemTemplate = response => @<NumericTextField @bind-Value="response.amount" @onfocusout="(()=>inputChangeCheck())" Required="true"></NumericTextField>
+    });
 
         // We're loading our sample data into the dataSource SourceCache.
         for (var i = 0; i < 500; i++)
         {
             count++;
             dataSource.Add(new DataItem(count));
+            itemSource.Add(new CustomGrid { id = Guid.NewGuid().ToString(), amount = (i * 10), name = "name", lastname = "lastname", secondid = Guid.NewGuid(), status = statuses.First().Text, secondstatus = statuses.First(), type = "type", visible = true });
         }
+
 
 
         base.OnInitialized();
     }
 
 
-
-
+    private void inputChangeCheck()
+    {
+        Console.WriteLine("Write in console.");
+    }
 }
